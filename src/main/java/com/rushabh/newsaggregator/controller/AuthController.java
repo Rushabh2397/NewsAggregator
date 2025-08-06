@@ -1,7 +1,9 @@
 package com.rushabh.newsaggregator.controller;
 
+import com.rushabh.newsaggregator.dto.Request.LoginUser;
 import com.rushabh.newsaggregator.dto.Request.RegisterUser;
 import com.rushabh.newsaggregator.dto.Response.ApiResponse;
+import com.rushabh.newsaggregator.dto.Response.LoginUserResponse;
 import com.rushabh.newsaggregator.dto.Response.RegisterUserResponse;
 import com.rushabh.newsaggregator.service.AuthService;
 import jakarta.validation.Valid;
@@ -24,8 +26,13 @@ public class AuthController {
 
     @GetMapping("/verify")
     public ResponseEntity<ApiResponse<String>> verifyUser(@RequestParam String token) {
-        System.out.println("RRRRRR"+token);
        String tokenVerificationMsg = authService.verifyUser(token);
        return ResponseEntity.status(200).body(new ApiResponse<>("Success",tokenVerificationMsg,null));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<LoginUserResponse>> login(@Valid @RequestBody LoginUser user){
+        LoginUserResponse res = authService.login(user);
+        return  ResponseEntity.status(200).body(new ApiResponse<>("Success","User logged in!",res));
     }
 }

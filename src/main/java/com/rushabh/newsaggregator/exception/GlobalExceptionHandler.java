@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -24,7 +25,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ApiResponse<String>> handleDuplicateKeyException(DataIntegrityViolationException ex) {
+    public ResponseEntity<ApiResponse<Void>> handleDuplicateKeyException(DataIntegrityViolationException ex) {
         Throwable rootCause = ex.getCause();
 
         if (rootCause != null && rootCause.getMessage() != null) {
@@ -37,6 +38,12 @@ public class GlobalExceptionHandler {
         }
 
         return ResponseEntity.badRequest().body(ApiResponse.error("Duplicate value violates a unique constraint", null));
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ApiResponse<Void>> handleRuntimeException(RuntimeException ex) {
+        return ResponseEntity.badRequest()
+                .body(ApiResponse.error(ex.getMessage(),null));
     }
 
     @ExceptionHandler(Exception.class)

@@ -1,13 +1,17 @@
 package com.rushabh.newsaggregator.service;
 
+import com.rushabh.newsaggregator.dto.Request.LoginUser;
 import com.rushabh.newsaggregator.dto.Request.RegisterUser;
+import com.rushabh.newsaggregator.dto.Response.LoginUserResponse;
 import com.rushabh.newsaggregator.dto.Response.RegisterUserResponse;
 import com.rushabh.newsaggregator.entity.User;
 import com.rushabh.newsaggregator.entity.VerificationToken;
 import com.rushabh.newsaggregator.repository.UserRepository;
 import com.rushabh.newsaggregator.repository.VerificationTokenRepository;
+import com.rushabh.newsaggregator.util.JwtUtils;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +31,10 @@ public class AuthService {
 
     @Autowired
     PasswordEncoder passwordEncoder;
+
+
+    @Value("${jwt.secret}")
+    private String secret;
 
     @Transactional
     public RegisterUserResponse registerUser(RegisterUser user) {
@@ -82,5 +90,27 @@ public class AuthService {
         verificationTokenRepository.deleteById(tokenEntity.getId());
 
         return "User verified successfully";
+    }
+
+    public LoginUserResponse login(LoginUser user){
+        Optional<User> userDetails = userRepository.findByEmail(user.getEmail());
+        if(userDetails.isEmpty()){
+            throw  new RuntimeException("Username or Password is incorrect");
+        }
+
+        if(!passwordEncoder.matches(user.getPassword(),userDetails.get().getPassword())){
+            throw  new RuntimeException("Username or Password is incorrect");
+        }
+
+        User userEntity= userDetails.get();
+        String token = JwtUtils.generateToken(userDetails.get().getEmail(),secret);
+
+        return  new LoginUserResponse(
+                userEntity.getFirstName(),
+                userEntity.getLastName(),
+                userEntity.getEmail(),
+                token
+        );
+
     }
 }
