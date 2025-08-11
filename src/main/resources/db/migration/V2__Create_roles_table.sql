@@ -1,0 +1,15 @@
+CREATE TABLE roles(
+   id SERIAL PRIMARY KEY,
+   name VARCHAR(50) NOT NULL UNIQUE,
+   description VARCHAR(255),
+   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE user_roles(
+    user_id INT  NOT NULL,
+    role_id INT  NOT NULL,
+    PRIMARY KEY (user_id,role_id),
+    FOREIGN KEY (user_id)  REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (role_id)  REFERENCES roles(id) ON DELETE CASCADE
+);

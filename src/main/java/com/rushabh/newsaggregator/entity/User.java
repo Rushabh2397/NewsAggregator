@@ -2,6 +2,9 @@ package com.rushabh.newsaggregator.entity;
 
 import jakarta.persistence.*;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Entity
 @Table(name = "users")
 public class User {
@@ -26,6 +29,14 @@ public class User {
 
     @Column(name = "is_active")
     private boolean isActive;
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name="user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<Role> roles= new HashSet<>();
 
     public User(){}
 
@@ -99,5 +110,21 @@ public class User {
 
     public void setIsEmailVerified(boolean isEmailVerified) {
         this.isEmailVerified = isEmailVerified;
+    }
+
+    public boolean isEmailVerified() {
+        return isEmailVerified;
+    }
+
+    public void setEmailVerified(boolean emailVerified) {
+        isEmailVerified = emailVerified;
+    }
+
+    public Set<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
     }
 }

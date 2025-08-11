@@ -4,8 +4,10 @@ import com.rushabh.newsaggregator.dto.Request.LoginUser;
 import com.rushabh.newsaggregator.dto.Request.RegisterUser;
 import com.rushabh.newsaggregator.dto.Response.LoginUserResponse;
 import com.rushabh.newsaggregator.dto.Response.RegisterUserResponse;
+import com.rushabh.newsaggregator.entity.Role;
 import com.rushabh.newsaggregator.entity.User;
 import com.rushabh.newsaggregator.entity.VerificationToken;
+import com.rushabh.newsaggregator.repository.RoleRepository;
 import com.rushabh.newsaggregator.repository.UserRepository;
 import com.rushabh.newsaggregator.repository.VerificationTokenRepository;
 import com.rushabh.newsaggregator.util.JwtUtils;
@@ -30,6 +32,9 @@ public class AuthService {
     VerificationTokenRepository verificationTokenRepository;
 
     @Autowired
+    RoleRepository roleRepository;
+
+    @Autowired
     PasswordEncoder passwordEncoder;
 
 
@@ -38,6 +43,8 @@ public class AuthService {
 
     @Transactional
     public RegisterUserResponse registerUser(RegisterUser user) {
+        Role role = roleRepository.findByName("USER").orElseThrow(() -> new RuntimeException("Role not found while registering"));
+
         User newUser = new User(
                 user.getEmail(),
                 passwordEncoder.encode(user.getPassword()),
@@ -45,6 +52,8 @@ public class AuthService {
                 user.getLastName(),
                 user.getPhone()
         );
+
+        newUser.getRoles().add(role);
         User savedUser = userRepository.save(newUser);
         String verificationToken = generateVerificationToken(savedUser);
         System.out.println("Verification Token: " + verificationToken);
@@ -92,20 +101,20 @@ public class AuthService {
         return "User verified successfully";
     }
 
-    public LoginUserResponse login(LoginUser user){
+    public LoginUserResponse login(LoginUser user) {
         Optional<User> userDetails = userRepository.findByEmail(user.getEmail());
-        if(userDetails.isEmpty()){
-            throw  new RuntimeException("Username or Password is incorrect");
+        if (userDetails.isEmpty()) {
+            throw new RuntimeException("Username or Password is incorrect");
         }
 
-        if(!passwordEncoder.matches(user.getPassword(),userDetails.get().getPassword())){
-            throw  new RuntimeException("Username or Password is incorrect");
+        if (!passwordEncoder.matches(user.getPassword(), userDetails.get().getPassword())) {
+            throw new RuntimeException("Username or Password is incorrect");
         }
 
-        User userEntity= userDetails.get();
-        String token = JwtUtils.generateToken(userDetails.get().getEmail(),secret);
+        User userEntity = userDetails.get();
+        String token = JwtUtils.generateToken(userEntity, secret);
 
-        return  new LoginUserResponse(
+        return new LoginUserResponse(
                 userEntity.getFirstName(),
                 userEntity.getLastName(),
                 userEntity.getEmail(),
