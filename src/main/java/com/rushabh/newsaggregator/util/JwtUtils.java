@@ -1,5 +1,6 @@
 package com.rushabh.newsaggregator.util;
 
+import com.rushabh.newsaggregator.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -14,12 +15,13 @@ import java.util.Date;
 public class JwtUtils {
 
 
-    public static String generateToken(String subject, String secret) {
+    public static String generateToken(User user, String secret) {
         return Jwts
                 .builder()
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + 3600000))
-                .subject(subject).signWith(getSigningKey(secret))
+                .subject(user.getEmail()).signWith(getSigningKey(secret))
+                .claim("roles",user.getRoles().stream().map(role-> "ROLE_"+role.getName().toUpperCase()).toList())
                 .compact();
     }
 
