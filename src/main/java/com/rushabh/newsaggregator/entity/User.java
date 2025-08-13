@@ -38,6 +38,9 @@ public class User {
     )
     private Set<Role> roles= new HashSet<>();
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private UserNewsPreference preference;
+
     public User(){}
 
     public User(String email, String password, String firstName, String lastName, String phone) {
